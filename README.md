@@ -2,6 +2,8 @@
 
 A plugin for interacting with geospatial data from ROS topics in QGIS.
 
+Note: this project is a work in progress. Better install and usage instructions are coming, along with example videos and example data.
+
 ## Dependencies
 - python-geojson
 - rospy
