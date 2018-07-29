@@ -1,1 +1,5 @@
-# TODO: bash script
+#!/usr/bin/env bash
+export QGIS_PLUGINPATH=$(catkin_find --first-only qgis-ros src)
+# Point to the directory that contains the QGIS plugin (python package).
+# TODO: Therefore this will not work when installed.
+qgis

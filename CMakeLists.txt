@@ -18,16 +18,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-catkin_install_python(
+
+install(
   PROGRAMS
     scripts/start_qgis_ros
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+
 install(
   FILES
     requirements.txt
-    zappa_settings.yaml
   DESTINATION
     ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

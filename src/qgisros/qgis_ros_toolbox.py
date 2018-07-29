@@ -19,7 +19,7 @@ class QgisRos(object):
         self.plugin_dir = os.path.dirname(__file__)
 
         self.actions = []
-        self.menu = 'ROS Toolbox'
+        self.menu = 'QGIS ROS'
         self.toolbar = self.iface.addToolBar(u'QgisRos')
         self.toolbar.setObjectName(u'QgisRos')
 
@@ -27,7 +27,8 @@ class QgisRos(object):
         try:
             rosgraph.Master('/rostopic').getPid()
         except socket_error:
-            raise rospy.ROSInitException('Cannot load ROS Toolbox. No ROS Master was found.')
+            raise rospy.ROSInitException(
+                'Cannot load QGIS ROS. No ROS Master was found.')
         else:
             rospy.init_node('qgis_ros_toolbox')
 
@@ -52,7 +53,7 @@ class QgisRos(object):
 
     def unload(self):
         for action in self.actions:
-            self.iface.removePluginMenu('ROS Toolbox', action)
+            self.iface.removePluginMenu('QGIS ROS', action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar  # Deref to ensure C++ cleanup.
 

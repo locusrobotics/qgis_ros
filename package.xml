@@ -10,8 +10,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>catkin_virtualenv</build_depend>
-  <run_depend>nav_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <export>
     <pip_requirements>requirements.txt</pip_requirements>

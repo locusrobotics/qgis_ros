@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ROS Toolbox</string>
+   <string>QGIS ROS</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
