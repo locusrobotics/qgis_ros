@@ -1,7 +1,6 @@
 # Developed based on: https://github.com/qgis/QGIS/blob/master/tests/src/python/provider_python.py
 from threading import RLock
 import rospy
-from qgis.PyQt.QtCore import QTextCodec
 from qgis.core import (
     QgsFields,
     QgsVectorLayer,
@@ -20,13 +19,12 @@ from qgis.core import (
     QgsFeatureIterator,
     QgsSpatialIndex,
     QgsDataProvider,
-    QgsCsException,
-    QgsJsonUtils
+    QgsCsException
 )
 
 from .crs import simpleCrs
 from .translator_registry import TranslatorRegistry
-
+from .helpers import featureCollectionToQgs, parseUrlArgs
 
 # TODO: Make a non-global version.
 # This limits all ROSVectorProvider classes from updating the canvas more than once per second.
@@ -55,14 +53,15 @@ class ROSVectorProvider(QgsVectorDataProvider):
         uri contains the topic name, topic type.
         Example uri: 'foo/my_pose?type=geometry_msgs/PoseStamped'
         '''
+        print(uri)
         try:
-            self._topic, args = uri.split('?')
-            args = args.split('&')
-            args = [a.split('=') for a in args]  # Pairs of (key, value)
-            args = dict(args)
+            self._topic, argString = uri.split('?')
         except IndexError:
             raise ValueError('uri Cannot be parsed. Is it valid? uri: {}'.format(uri))
 
+        # Parse string of arguments into dict of python types.
+        args = parseUrlArgs(argString)
+        print(args)
         super().__init__(uri)
 
         self._translator = TranslatorRegistry.instance().get(args['type'])
@@ -83,17 +82,20 @@ class ROSVectorProvider(QgsVectorDataProvider):
         self._provider_options = providerOptions
         self.next_feature_id = 0  # TODO: Is there a more contained approach for numbering? Generator?
         self._lock = RLock()
+        self._subscriber = None
 
-        if args.get('index') in ('yes', 'true', 'True'):
+        if args.get('index'):
             self.createSpatialIndex()
 
-        self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._ros_message_callback)
+        if args.get('subscribe'):
+            self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._handle_message)
+        else:
+            msg = rospy.wait_for_message(self._topic, self._translator.messageType, timeout=5)
+            self._handle_message(msg)
 
-    def _ros_message_callback(self, msg):
-        geojsonFeatures = self._translator.translate(msg)
-        codec = QTextCodec.codecForName("UTF-8")
-        fields = QgsJsonUtils.stringToFields(geojsonFeatures, codec)
-        features = QgsJsonUtils.stringToFeatureList(geojsonFeatures, fields, codec)
+    def _handle_message(self, msg):
+        featureCollection = self._translator.translate(msg)
+        features, fields = featureCollectionToQgs(featureCollection)
 
         self._fields = fields
 
@@ -117,7 +119,9 @@ class ROSVectorProvider(QgsVectorDataProvider):
         cleanup activities on the Python side before the underlying C++ object is deleted, thus making this
         object unstable.  A RuntimeError is raised when this is detected. We'll perform cleanup at that point.
         '''
-        self._subscriber.unregister()
+        if self._subscriber:
+            self._subscriber.unregister()
+            self._subscriber = None
 
     def featureSource(self):
         with self._lock:

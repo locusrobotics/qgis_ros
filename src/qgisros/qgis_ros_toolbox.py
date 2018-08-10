@@ -6,7 +6,7 @@ from qgis.core import QgsProviderRegistry, QgsProviderMetadata
 import rosgraph
 import rospy
 
-from .vector_data_dialog import VectorDataDialog
+from .ui import VectorDataDialog
 from .core import ROSVectorProvider
 
 
@@ -27,8 +27,7 @@ class QgisRos(object):
         try:
             rosgraph.Master('/rostopic').getPid()
         except socket_error:
-            raise rospy.ROSInitException(
-                'Cannot load QGIS ROS. No ROS Master was found.')
+            raise rospy.ROSInitException('Cannot load QGIS ROS. ROS Master was not found.')
         else:
             rospy.init_node('qgis_ros_toolbox')
 

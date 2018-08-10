@@ -29,15 +29,14 @@ class VectorTranslatorMixin(object):
     dataType = 'Vector'
 
     @classmethod
-    def createLayer(cls, name, subscribe=False):
-        if subscribe:
-            uri = '{}?type={}&index=no'.format(name, cls.messageType._type)
-            return QgsVectorLayer(uri, name, 'rosvectorprovider')
-        else:
-            # TODO: poll with timeout for one message
-            # TODO: create a `memory` layer
-            # TODO: use translator to populate the memory layer.
+    def createLayer(cls, topic_name, subscribe=False, data=None):
+        if data:
+            # TODO: data was passed in, create the layer with that.
             pass
+        else:
+            # Create a QgsVectorLayer that gets data from the rosvectorprovider.
+            uri = '{}?type={}&index=no&subscribe={}'.format(topic_name, cls.messageType._type, subscribe)
+            return QgsVectorLayer(uri, topic_name, 'rosvectorprovider')
 
 
 class RasterTranslatorMixin(object):
@@ -48,6 +47,5 @@ class RasterTranslatorMixin(object):
     def createLayer(cls, topicName, subscribe=False, initialMessage=None):
         if subscribe:
             raise RuntimeError('Cannot subscribe to Raster layers. Not implemented yet.')
-
         rasterFileName = cls.translate(initialMessage, topicName)
         return QgsRasterLayer(rasterFileName, topicName)

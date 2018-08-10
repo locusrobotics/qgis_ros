@@ -5,10 +5,10 @@ import os
 from PyQt5 import uic, QtCore, QtWidgets
 from qgis.core import QgsProject
 import rospy
-from .core import TranslatorRegistry
+from ..core import TranslatorRegistry
 
 
-FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'ui' / 'vector_data_dialog.ui'))
+FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'vector_data_dialog.ui'))
 
 
 class VectorDataDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -21,7 +21,8 @@ class VectorDataDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.topicList.currentItemChanged.connect(self._onTopicListChange)
         self.createLayerButton.clicked.connect(self._onCreateLayer)
-        self.subscribeButton.clicked.connect(partial(self._onCreateLayer, subscribe=True))
+        self.subscribeButton.clicked.connect(
+            partial(self._onCreateLayer, subscribe=True))
 
         self._selectedTopicName = None
         self._selectedTopicType = None
