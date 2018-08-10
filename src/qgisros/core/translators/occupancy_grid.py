@@ -1,8 +1,6 @@
-import os
 import uuid
-from pathlib import Path
 import subprocess
-
+from catkin.find_in_workspaces import find_in_workspaces as catkin_find
 from nav_msgs.msg import OccupancyGrid
 from .translator import Translator, RasterTranslatorMixin
 
@@ -19,7 +17,7 @@ class OccupancyGridTranslator(Translator, RasterTranslatorMixin):
 
     @staticmethod
     def translate(msg, topicName):
-        script = str(Path(os.path.dirname(os.path.realpath(__file__))) / '..' / '..' / 'scripts' / 'topic_to_geotiff.py')
+        script = catkin_find(project='qgis_ros', path='scripts/topic_to_geotiff.py', first_match_only=True)[0]
         outfile = '/tmp/{}.tif'.format(uuid.uuid4())
 
         fail = subprocess.call([script, topicName, outfile])

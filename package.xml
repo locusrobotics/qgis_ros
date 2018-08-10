@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>qgis-ros</name>
+  <name>qgis_ros</name>
   <version>0.0.1</version>
   <description>QGIS plugin for accessing real-time and bagged ROS data</description>
 

@@ -53,7 +53,6 @@ class ROSVectorProvider(QgsVectorDataProvider):
         uri contains the topic name, topic type.
         Example uri: 'foo/my_pose?type=geometry_msgs/PoseStamped'
         '''
-        print(uri)
         try:
             self._topic, argString = uri.split('?')
         except IndexError:
@@ -61,7 +60,6 @@ class ROSVectorProvider(QgsVectorDataProvider):
 
         # Parse string of arguments into dict of python types.
         args = parseUrlArgs(argString)
-        print(args)
         super().__init__(uri)
 
         self._translator = TranslatorRegistry.instance().get(args['type'])
@@ -108,9 +106,8 @@ class ROSVectorProvider(QgsVectorDataProvider):
         global last_global_refresh
         now = rospy.get_time()
         if now - last_global_refresh > DATA_UPDATE_THROTTLE:
-            print(last_global_refresh)
             last_global_refresh = now
-            # self.dataChanged.emit()
+            self.dataChanged.emit()  # TODO: remove flicker when this happens.
 
     def _cleanup(self):
         ''' Clean up ROS subscriber connection.

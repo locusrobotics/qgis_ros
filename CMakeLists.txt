@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(qgis-ros)
+project(qgis_ros)
 
 find_package(catkin REQUIRED COMPONENTS
   catkin_virtualenv
@@ -18,13 +18,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-
 install(
   PROGRAMS
     scripts/start_qgis_ros
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
 
 install(
   FILES

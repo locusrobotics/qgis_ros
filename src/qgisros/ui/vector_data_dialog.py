@@ -29,7 +29,6 @@ class VectorDataDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def showEvent(self, event):
         self._populate_topic_list()
-        print('shown!')
 
     def _populate_topic_list(self):
         self.topicList.clear()

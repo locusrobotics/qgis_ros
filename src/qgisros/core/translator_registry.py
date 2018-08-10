@@ -1,3 +1,6 @@
+import os
+import importlib
+
 from .translators import builtinTranslators
 
 
@@ -19,7 +22,7 @@ class TranslatorRegistry(object):
         if TranslatorRegistry._instance is None:
             TranslatorRegistry._instance = self
         else:
-            raise Exception('Cannot re-instantiate singleton.')
+            raise Exception('Cannot re-instantiate singleton.')  # TODO: better exception type.
 
         self._translators = {}
 
@@ -27,13 +30,23 @@ class TranslatorRegistry(object):
         for t in builtinTranslators:
             self.register(t)
 
-        # Register extra translators found in arg.
-        # TODO: register extras using importlib.
-        # TODO: get envvar ROS_QGIS_EXTRA_TRANSLATORS
-        # parse envvar separating by comma
-        # for each, try to load it with pathlib and iterate over contents, registering each.
+        # Register extra translators found in QGIS_ROS_EXTRA_TRANSLATORS.
+        translatorPaths = os.environ.get('QGIS_ROS_EXTRA_TRANSLATORS', '').split(',')
+        for p in translatorPaths:
+            m = importlib.import_module(p)
+            try:
+                translators = getattr(m, 'translators')
+            except AttributeError:
+                # Couldn't find any translators from a listed entry.
+                # TODO: log this.
+                continue
+
+            # Register found translators.
+            for t in translators:
+                self.register(t)
 
     def register(self, translator):
+        # TODO: log every registration.
         if translator.messageType._type in self._translators:
             raise ValueError('Type {} already registered.'.format(translator.messageType._type))
         self._translators[translator.messageType._type] = translator
