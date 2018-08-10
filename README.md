@@ -35,6 +35,11 @@ Additional translators can be registered in order to enable support for custom m
 
 
 ## TODO
-- Additional examples and documentation
-- Rosbag support
-- Performance improvements for current raster support
+
+### Design Challenges
+
+- How to gracefully handle running when rosmaster isn't available or disappears? First worry about reporting if it's not available on startup/initial use.
+
+- Dependency handling for json_transport
+
+- A way at launch to list additional available python packages as extra topic translators.
