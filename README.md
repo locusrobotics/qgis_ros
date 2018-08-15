@@ -4,14 +4,15 @@ A plugin for interacting with geospatial data from ROS topics in QGIS.
 
 Note: this project is a work in progress. Better install and usage instructions are coming, along with example videos and example data.
 
-## Dependencies
+## Dependencies (TODO cleanup, talk about how one might resolve dependencies not available through rosdep)
 - python-geojson
 - rospy
 - geometry_msgs
 - nav_msgs
 - json_transport
+- gnupg (rosbag in Python3)
 
-## Installation
+## Installation (TODO cleanup)
 
 1. Install QGIS 3.1 or newer: https://qgis.org/en/site/forusers/download.html
 2. Clone this repo
@@ -33,13 +34,5 @@ Additional translators can be registered in order to enable support for custom m
 ## Usage
 - TODO examples of loading vector and raster data, subscribing to vector layers, and building a pipeline for various analytical functions.
 
-
-## TODO
-
-### Design Challenges
-
-- How to gracefully handle running when rosmaster isn't available or disappears? First worry about reporting if it's not available on startup/initial use.
-
-- Dependency handling for json_transport
-
-- A way at launch to list additional available python packages as extra topic translators.
+## A note on code style
+Developers will notice that `camelCase` is being used in Python. This may seem unusual, but PyQT and QGIS both use `camelCase`.So we follow that standard in accordance with PEP8.

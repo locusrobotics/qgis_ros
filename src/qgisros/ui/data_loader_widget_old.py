@@ -8,14 +8,14 @@ import rospy
 from ..core import TranslatorRegistry
 
 
-FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'vector_data_dialog.ui'))
+FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'data_loader_widget.ui'))
 
 
-class VectorDataDialog(QtWidgets.QDialog, FORM_CLASS):
+class DataLoaderWidget(QtWidgets.QWidget, FORM_CLASS):
 
     def __init__(self, parent=None):
         '''Occurs on init, even if dialog is not shown.'''
-        super(VectorDataDialog, self).__init__(parent)
+        super(DataLoaderWidget, self).__init__(parent)
 
         self.setupUi(self)
 

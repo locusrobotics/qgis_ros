@@ -92,8 +92,8 @@ class ROSVectorProvider(QgsVectorDataProvider):
             self._handle_message(msg)
 
     def _handle_message(self, msg):
-        featureCollection = self._translator.translate(msg)
-        features, fields = featureCollectionToQgs(featureCollection)
+        features = self._translator.translate(msg)
+        features, fields = featureCollectionToQgs(features)
 
         self._fields = fields
 

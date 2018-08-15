@@ -1,16 +1,22 @@
 import os.path
-from socket import error as socket_error
 
 from PyQt5 import QtWidgets
 from qgis.core import QgsProviderRegistry, QgsProviderMetadata
-import rosgraph
-import rospy
 
-from .ui import VectorDataDialog
+from .ui import ROSMasterDialog, BagfileDialog
 from .core import ROSVectorProvider
 
 
 class QgisRos(object):
+    '''The parent plugin object.
+
+    Initializes both UI and non-UI elements for QGIS-ROS. This includes a toolbar (and associated drop-down menu),
+    which are connected to instances of each window, created eagerly. The ROSVectorProvider is also registered,
+    allowing data layers to be created using it.
+
+    A ROS node is *not* initialized unless explicitly requested by the user. This allows a user to use ROS bags in an
+    environment where a ROS master is not
+    '''
 
     AUTO_REFRESH_INTERVAL = 1000  # milliseconds
 
@@ -18,37 +24,37 @@ class QgisRos(object):
         self.iface = iface
         self.plugin_dir = os.path.dirname(__file__)
 
+        # Register all actions for cleanup on plugin unload.
         self.actions = []
+
         self.menu = 'QGIS ROS'
         self.toolbar = self.iface.addToolBar(u'QgisRos')
         self.toolbar.setObjectName(u'QgisRos')
-
-        # Try to init ROS node or fail out immediately to avoid blocking the UI.
-        try:
-            rosgraph.Master('/rostopic').getPid()
-        except socket_error:
-            raise rospy.ROSInitException('Cannot load QGIS ROS. ROS Master was not found.')
-        else:
-            rospy.init_node('qgis_ros_toolbox')
 
         # Register the ROS vector data provider.
         metadata = QgsProviderMetadata(
             ROSVectorProvider.providerKey(),
             ROSVectorProvider.description(),
-            ROSVectorProvider.createProvider
-        )
-        r = QgsProviderRegistry.instance()
-        r.registerProvider(metadata)
+            ROSVectorProvider.createProvider)
+        QgsProviderRegistry.instance().registerProvider(metadata)
 
-        self.dialog = VectorDataDialog()
+        # Eager init dialogs and preserve state when re-opened in the future.
+        self.bagFileDialog = BagfileDialog()
+        self.rosMasterDialog = ROSMasterDialog()
 
     def initGui(self):
-        action = QtWidgets.QAction('Vector Data', self.iface.mainWindow())
-        action.triggered.connect(self.run)
-        action.setEnabled(True)
+        toolbarButtons = [
+            ('Load Bag Data...', self.bagFileDialog),
+            ('Load Topic Data', self.rosMasterDialog)
+        ]
 
-        self.toolbar.addAction(action)
-        self.iface.addPluginToMenu(self.menu, action)
+        # Assemble the toolbar buttons.
+        for button in toolbarButtons:
+            action = QtWidgets.QAction(button[0], self.iface.mainWindow())
+            action.triggered.connect(button[1].show)
+            self.toolbar.addAction(action)
+            self.iface.addPluginToMenu(self.menu, action)
+            self.actions.append(action)
 
     def unload(self):
         for action in self.actions:
@@ -58,4 +64,3 @@ class QgisRos(object):
 
     def run(self):
         self.dialog.show()
-        self.dialog.exec_()
