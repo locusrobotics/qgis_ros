@@ -103,7 +103,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="AddTopicButton">
+           <widget class="QPushButton" name="addTopicButton">
             <property name="text">
              <string>Add (Subscribe)</string>
             </property>
