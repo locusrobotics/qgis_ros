@@ -16,6 +16,7 @@ FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'bagfile_di
 class BagfileDialog(QDialog, FORM_CLASS):
 
     layerCreated = pyqtSignal(object)
+    layerLoadProgress = pyqtSignal(int)
 
     def __init__(self, parent=None):
         super(BagfileDialog, self).__init__(parent)
@@ -26,6 +27,7 @@ class BagfileDialog(QDialog, FORM_CLASS):
         self.unloadBagButton.clicked.connect(self._unloadBag)
 
         self.layerCreated.connect(self.addCreatedLayer)
+        self.layerLoadProgress.connect(self.updateLoadProgress)
 
         self._bagFilePath = None
 
@@ -49,7 +51,12 @@ class BagfileDialog(QDialog, FORM_CLASS):
 
     def _createLayerWorker(self):
         name, topicType = self.dataLoaderWidget.getSelectedTopic()
-        messages = helpers.getBagData(self._bagFilePath, name)
+        messages = helpers.getBagData(
+            self._bagFilePath,
+            name,
+            sampleInterval=100,
+            progressCallback=self.layerLoadProgress.emit
+        )
         translator = TranslatorRegistry.instance().get(topicType)
         layer = translator.createLayer(name, rosMessages=messages)
         self.layerCreated.emit(layer)
@@ -60,6 +67,10 @@ class BagfileDialog(QDialog, FORM_CLASS):
     @pyqtSlot(object)
     def addCreatedLayer(self, layer):
         QgsProject.instance().addMapLayer(layer)
+
+    @pyqtSlot(int)
+    def updateLoadProgress(self, progress):
+        self.addTopicButton.setText(str(progress))
 
     def _unloadBag(self):
         '''Frees up any resources from the bag, resets view and state.'''

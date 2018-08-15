@@ -61,13 +61,25 @@
    </item>
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
-     <widget class="DataLoaderWidget" name="dataLoaderWidget"/>
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="dataLoaderWidgetContainer">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="DataLoaderWidget" name="dataLoaderWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="nodeInitWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="searchMasterLabel">
          <property name="text">
-          <string>Initialize a node if not already initted.</string>
+          <string>Searching for ROS Master...</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
