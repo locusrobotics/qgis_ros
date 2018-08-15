@@ -1,4 +1,3 @@
-from geojson import Point, Feature
 from geometry_msgs.msg import PoseStamped
 from .translator import Translator, VectorTranslatorMixin
 
@@ -9,7 +8,15 @@ class PoseStampedTranslator(Translator, VectorTranslatorMixin):
     geomType = Translator.GeomTypes.Point
 
     @staticmethod
-    def translate(msg):  # TODO: More DRY.
-        p = Point((msg.pose.position.x, msg.pose.position.y))
-        f = Feature(geometry=p, properties={'yaw': 1.0})  # TODO YAW
-        return [f]  # List of features derived from the message.
+    def translate(msg):
+        return [{
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [msg.pose.position.x, msg.pose.position.y]
+            },
+            'properties': {
+                'yaw': 1.0,  # TODO
+                'stamp': msg.header.stamp.to_sec(),
+            }
+        }]

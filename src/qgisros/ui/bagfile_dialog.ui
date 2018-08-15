@@ -39,7 +39,7 @@
          </font>
         </property>
         <property name="text">
-         <string>None Selected</string>
+         <string>No bag selected</string>
         </property>
        </widget>
       </item>

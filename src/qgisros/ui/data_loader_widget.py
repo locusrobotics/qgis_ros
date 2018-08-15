@@ -17,15 +17,19 @@ class DataLoaderWidget(QWidget, FORM_CLASS):
 
         self.setupUi(self)
 
-    def setTopics(self, topicMetadata):
-        '''Populates table with topicMetadata.'''
+    def setTopics(self, topicMetadatas):
+        '''Populates table with a new set of topicMetadata.'''
+        self.tableWidget.clearContents()
+
+        if topicMetadatas is None:
+            return
 
         # Filter untranslatable topics
-        topicMetadata = [t for t in topicMetadata if t.type in TranslatorRegistry.instance().translatableTypeNames]
+        topicMetadatas = [t for t in topicMetadatas if t.type in TranslatorRegistry.instance().translatableTypeNames]
 
         # Populate table.
-        self.tableWidget.setRowCount(len(topicMetadata))
-        for row, metadata in enumerate(topicMetadata):
+        self.tableWidget.setRowCount(len(topicMetadatas))
+        for row, metadata in enumerate(topicMetadatas):
             self.tableWidget.setItem(row, 0, QTableWidgetItem(metadata.name))
             self.tableWidget.setItem(row, 1, QTableWidgetItem(metadata.type))
             self.tableWidget.setItem(row, 2, QTableWidgetItem(str(metadata.count)))

@@ -10,7 +10,7 @@ import rosbag
 TopicMetadata = namedtuple('TopicMetadata', 'name type count')
 
 
-def featureCollectionToQgs(features):
+def featuresToQgs(features):
     '''Accepts a list of geojson Features and returns a tuple of (features, fields)'''
     fc = {'type': 'FeatureCollection', 'features': features}
     fcString = json.dumps(fc)

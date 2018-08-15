@@ -62,5 +62,6 @@ class QgisRos(object):
             self.iface.removeToolBarIcon(action)
         del self.toolbar  # Deref to ensure C++ cleanup.
 
-    def run(self):
-        self.dialog.show()
+    # TODO remove?
+    # def run(self):
+        # self.dialog.show()

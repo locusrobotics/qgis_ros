@@ -24,7 +24,7 @@ from qgis.core import (
 
 from .crs import simpleCrs
 from .translator_registry import TranslatorRegistry
-from .helpers import featureCollectionToQgs, parseUrlArgs
+from .helpers import featuresToQgs, parseUrlArgs
 
 # TODO: Make a non-global version.
 # This limits all ROSVectorProvider classes from updating the canvas more than once per second.
@@ -93,12 +93,12 @@ class ROSVectorProvider(QgsVectorDataProvider):
 
     def _handle_message(self, msg):
         features = self._translator.translate(msg)
-        features, fields = featureCollectionToQgs(features)
+        qgsFeatures, fields = featuresToQgs(features)
 
         self._fields = fields
 
         try:
-            self._setFeatures(features)
+            self._setFeatures(qgsFeatures)
         except RuntimeError:
             self._cleanup()
 

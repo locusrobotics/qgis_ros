@@ -1,4 +1,7 @@
 from qgis.core import QgsVectorLayer, QgsRasterLayer, QgsWkbTypes
+import rospy
+from ..crs import PROJ4_SIMPLE
+from ..helpers import featuresToQgs
 
 
 class Translator(object):
@@ -12,9 +15,10 @@ class Translator(object):
     GeomTypes = QgsWkbTypes
 
     messageType = None
-    dataType = None
+    dataModelType = None
     geomType = GeomTypes.Unknown
 
+    # TODO: what are these for again?
     # @classmethod
     # def createLayer(cls, name, subscribe=False):
     #     raise NotImplementedError(str(cls))
@@ -26,26 +30,45 @@ class Translator(object):
 
 class VectorTranslatorMixin(object):
 
-    dataType = 'Vector'
+    dataModelType = 'Vector'
 
     @classmethod
-    def createLayer(cls, topic_name, subscribe=False, data=None):
-        if data:
-            # TODO: data was passed in, create the layer with that.
-            pass
+    def createLayer(cls, topicName, subscribe=False, rosMessages=None):
+        if rosMessages:
+            # Features were passed in, so it's a static data layer.
+            geomType = QgsWkbTypes.displayString(cls.geomType)  # Get string version of geomtype enum.
+            uri = '{}?crs=PROJ4:{}'.format(geomType, PROJ4_SIMPLE)
+            layer = QgsVectorLayer(uri, topicName, 'memory')
+
+            # Convert from ROS messages to GeoJSON Features to QgsFeatures.
+            features = []
+            for m in rosMessages:
+                features += cls.translate(m)
+
+            qgsFeatures, fields = featuresToQgs(features)
+            layer.dataProvider().addAttributes(fields)
+            layer.dataProvider().addFeatures(qgsFeatures)
+            return layer
         else:
-            # Create a QgsVectorLayer that gets data from the rosvectorprovider.
-            uri = '{}?type={}&index=no&subscribe={}'.format(topic_name, cls.messageType._type, subscribe)
-            return QgsVectorLayer(uri, topic_name, 'rosvectorprovider')
+            # No features, it must be a ROS topic to get data from.
+            uri = '{}?type={}&index=no&subscribe={}'.format(topicName, cls.messageType._type, subscribe)
+            return QgsVectorLayer(uri, topicName, 'rosvectorprovider')
 
 
 class RasterTranslatorMixin(object):
 
-    dataType = 'Raster'
+    dataModelType = 'Raster'
 
     @classmethod
-    def createLayer(cls, topicName, subscribe=False, initialMessage=None):
-        if subscribe:
-            raise RuntimeError('Cannot subscribe to Raster layers. Not implemented yet.')
-        rasterFileName = cls.translate(initialMessage, topicName)
-        return QgsRasterLayer(rasterFileName, topicName)
+    def createLayer(cls, topicName, rosMessages=None):
+        '''Creates a raster layer from a ROS message.
+        Unlike vector data, raster layers cannot currently be subscribed to.
+        '''
+        if rosMessages:
+            msg = rosMessages[0]
+        else:
+            msg = rospy.wait_for_message(topicName, cls.messageType, 10)
+
+        geotiffFilename = cls.translate(msg)
+        layer = QgsRasterLayer(geotiffFilename, topicName)
+        return layer
