@@ -1,10 +1,10 @@
 import json
+import math
 
 from qgis.PyQt.QtCore import QTextCodec
 from qgis.core import QgsJsonUtils
 
 import rosbag
-
 
 
 def featuresToQgs(features):
@@ -42,12 +42,12 @@ def getTopicsFromBag(filePath):
     return t
 
 
-def getBagData(filePath, topicName, sampleInterval=1, progressCallback=None):
+def getBagData(filePath, topicName, sampleInterval=1, takeLast=False, progressCallback=None):
     '''Returns a collection of messages from a bag.
     Invokes a progress callback every 1000 elements as this can be long running.
     '''
     count = 0
-
+    lastMessage = None
     data = []
 
     with rosbag.Bag(filePath, 'r') as bag:
@@ -55,9 +55,22 @@ def getBagData(filePath, topicName, sampleInterval=1, progressCallback=None):
             count += 1
             if count % sampleInterval == 0:  # Append every sampleInterval message.
                 data.append(message)
+                lastMessage = message
 
             # Invoke progress callback every 1000 messages.
             if count % 1000 == 0 and progressCallback:
                 progressCallback(count)
 
+    if takeLast:
+        data = [lastMessage]
+
     return data
+
+
+def quaternionToYaw(q):
+    '''Returns the yaw in radians of a quaternion.
+    Reimplements part of euler_from_quaternion from the tf package because tf doesn't play well in Python 3.
+    '''
+    t0 = 2.0 * (q.w * q.z + q.x * q.y)
+    t1 = 1.0 - 2.0 * (q.y**2 + q.z**2)
+    return math.atan2(t0, t1)

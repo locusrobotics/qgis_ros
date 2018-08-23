@@ -18,9 +18,10 @@ from qgis.core import (
     QgsAbstractFeatureIterator,
     QgsFeatureIterator,
     QgsSpatialIndex,
-    QgsDataProvider,
-    QgsCsException
+    QgsDataProvider
 )
+
+from PyQt5.QtCore import pyqtSignal
 
 from .crs import simpleCrs
 from .translator_registry import TranslatorRegistry
@@ -34,6 +35,8 @@ last_global_refresh = 0
 
 
 class ROSVectorProvider(QgsVectorDataProvider):
+
+    fieldsUpdated = pyqtSignal()
 
     @classmethod
     def providerKey(cls):
@@ -82,6 +85,8 @@ class ROSVectorProvider(QgsVectorDataProvider):
         self._lock = RLock()
         self._subscriber = None
 
+        self.keepOlderMessages = args.get('keepOlderMessages', False)
+
         if args.get('index'):
             self.createSpatialIndex()
 
@@ -95,7 +100,14 @@ class ROSVectorProvider(QgsVectorDataProvider):
         features = self._translator.translate(msg)
         qgsFeatures, fields = featuresToQgs(features)
 
+        # TODO: check if fields changed and emit a signal only then.
         self._fields = fields
+        self.fieldsUpdated.emit()
+
+        # If we're not accumulating history, clear features first.
+        if not self.keepOlderMessages:
+            self.next_feature_id = 0
+            self._features = {}  # Clear features.
 
         try:
             self._setFeatures(qgsFeatures)
@@ -107,7 +119,7 @@ class ROSVectorProvider(QgsVectorDataProvider):
         now = rospy.get_time()
         if now - last_global_refresh > DATA_UPDATE_THROTTLE:
             last_global_refresh = now
-            self.dataChanged.emit()  # TODO: remove flicker when this happens.
+            self.dataChanged.emit()  # TODO: remove occasional flicker when this happens.
 
     def _cleanup(self):
         ''' Clean up ROS subscriber connection.
@@ -171,9 +183,6 @@ class ROSVectorProvider(QgsVectorDataProvider):
                 for f in self._features.values():
                     self._spatialindex.deleteFeature(f)
 
-            self.next_feature_id = 0
-            self._features = {}
-
             for _f in flist:
                 self._features[self.next_feature_id] = _f
                 _f.setId(self.next_feature_id)
@@ -217,7 +226,7 @@ class ROSVectorProvider(QgsVectorDataProvider):
         return True
 
     def capabilities(self):
-        return QgsVectorDataProvider.SelectAtId
+        return QgsVectorDataProvider.SelectAtId | QgsVectorDataProvider.CreateSpatialIndex
 
     def name(self):
         return self.providerKey()
@@ -265,7 +274,7 @@ class ROSVectorFeatureIterator(QgsAbstractFeatureIterator):
             )
         try:
             self._filter_rect = self.filterRectToSourceCrs(self._transform)
-        except QgsCsException as e:
+        except Exception as e:
             self.close()
             return
         self._filter_rect = self.filterRectToSourceCrs(self._transform)

@@ -33,7 +33,7 @@ class VectorTranslatorMixin(object):
     dataModelType = 'Vector'
 
     @classmethod
-    def createLayer(cls, topicName, subscribe=False, rosMessages=None):
+    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False):
         if rosMessages:
             # Features were passed in, so it's a static data layer.
             geomType = QgsWkbTypes.displayString(cls.geomType)  # Get string version of geomtype enum.
@@ -48,11 +48,24 @@ class VectorTranslatorMixin(object):
             qgsFeatures, fields = featuresToQgs(features)
             layer.dataProvider().addAttributes(fields)
             layer.dataProvider().addFeatures(qgsFeatures)
+            layer.updateFields()  # Required, otherwise the layer will not re-read field metadata.
             return layer
         else:
             # No features, it must be a ROS topic to get data from.
-            uri = '{}?type={}&index=no&subscribe={}'.format(topicName, cls.messageType._type, subscribe)
-            return QgsVectorLayer(uri, topicName, 'rosvectorprovider')
+            uri = '{}?type={}&index=no&subscribe={}&keepOlderMessages={}'.format(
+                topicName,
+                cls.messageType._type,
+                subscribe,
+                keepOlderMessages
+            )
+            layer = QgsVectorLayer(uri, topicName, 'rosvectorprovider')
+
+            # Need to monitor when data is changed and call updateFields in order to capture the new fields
+            # that are discovered on the first and possibly future messages. Without this, the layer will never
+            # expose any of the field data available.
+            # TODO: Find a cleaner way to signal this update and only call it when actual field changes occur.
+            layer.dataChanged.connect(layer.updateFields)
+            return layer
 
 
 class RasterTranslatorMixin(object):
@@ -60,7 +73,7 @@ class RasterTranslatorMixin(object):
     dataModelType = 'Raster'
 
     @classmethod
-    def createLayer(cls, topicName, rosMessages=None):
+    def createLayer(cls, topicName, rosMessages=None, **kwargs):
         '''Creates a raster layer from a ROS message.
         Unlike vector data, raster layers cannot currently be subscribed to.
         '''

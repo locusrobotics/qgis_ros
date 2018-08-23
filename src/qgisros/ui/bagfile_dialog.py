@@ -23,54 +23,77 @@ class BagfileDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.openBagButton.clicked.connect(self._getBagFileTopics)
-        self.addTopicButton.clicked.connect(self._createLayerFromSelected)
+        self.addLayerButton.clicked.connect(self._createLayerFromSelected)
         self.unloadBagButton.clicked.connect(self._unloadBag)
 
-        self.layerCreated.connect(self.addCreatedLayer)
-        self.layerLoadProgress.connect(self.updateLoadProgress)
+        self.layerCreated.connect(self._addCreatedLayer)
+        self.layerLoadProgress.connect(self._updateLoadProgress)
+        self.takeRadioGroup.buttonClicked.connect(self._updateRadioSelection)
 
         self._bagFilePath = None
 
     def _getBagFileTopics(self):
         # Load topic metadata from bag.
         filePath, _ = QFileDialog.getOpenFileName(parent=self, filter='Bagfiles (*.bag);;All Files (*)')
-        topicMetadata = helpers.getTopicsFromBag(filePath)
 
-        # Bag loaded properly. Update components and then show them.
+        if not filePath:
+            return
+
         self._bagFilePath = filePath
-        self.currentBagPathLabel.setText(filePath)
+        self.openBagButton.setText('Opening...')
+        self.openBagButton.setEnabled(False)
+
+        threading.Thread(name='getBagTopicsThread', target=self._getBagContentsWorker).start()
+
+    def _getBagContentsWorker(self):
+        topicMetadata = helpers.getTopicsFromBag(self._bagFilePath)
+        self.currentBagPathLabel.setText(self._bagFilePath)
         self.dataLoaderWidget.setTopics(topicMetadata)
         self.stackedWidget.setCurrentWidget(self.dataLoaderWidgetContainer)
+        self.openBagButton.setText('Open Bag...')
+        self.openBagButton.setEnabled(True)
+        self.unloadBagButton.setEnabled(True)
 
     def _createLayerFromSelected(self):
-        self.addTopicButton.setText('Loading...')
-        self.addTopicButton.setEnabled(False)
+        self.addLayerButton.setText('Loading...')
+        self.addLayerButton.setEnabled(False)
 
-        t = threading.Thread(name='my_worker', target=self._createLayerWorker)
-        t.start()
+        threading.Thread(name='createLayerThread', target=self._createLayerWorker).start()
 
     def _createLayerWorker(self):
         name, topicType = self.dataLoaderWidget.getSelectedTopic()
+
+        # Defaults for taking all messages.
+        sampleInterval = 1
+        takeLast = False
+
+        if self.takeSampleRadio.isChecked():  # Take sample.
+            sampleInterval = self.sampleIntervalBox.value()
+        elif self.takeLastRadio.isChecked():  # Take last.
+            takeLast = True
+
         messages = helpers.getBagData(
             self._bagFilePath,
             name,
-            sampleInterval=100,
+            sampleInterval=sampleInterval,
+            takeLast=takeLast,
             progressCallback=self.layerLoadProgress.emit
         )
+
         translator = TranslatorRegistry.instance().get(topicType)
         layer = translator.createLayer(name, rosMessages=messages)
-        self.layerCreated.emit(layer)
+        self.layerCreated.emit(layer)  # Need to add layer from main thread.
 
-        self.addTopicButton.setText('Add Layer')
-        self.addTopicButton.setEnabled(True)
+        self.addLayerButton.setText('Add Layer')
+        self.addLayerButton.setEnabled(True)
 
     @pyqtSlot(object)
-    def addCreatedLayer(self, layer):
+    def _addCreatedLayer(self, layer):
         QgsProject.instance().addMapLayer(layer)
 
     @pyqtSlot(int)
-    def updateLoadProgress(self, progress):
-        self.addTopicButton.setText(str(progress))
+    def _updateLoadProgress(self, progress):
+        self.addLayerButton.setText(str(progress))
 
     def _unloadBag(self):
         '''Frees up any resources from the bag, resets view and state.'''
@@ -79,3 +102,10 @@ class BagfileDialog(QDialog, FORM_CLASS):
         self.dataLoaderWidget.setTopics(None)
         self.stackedWidget.setCurrentWidget(self.bagSelectionWidget)
         self.unloadBagButton.setEnabled(False)
+
+    def _updateRadioSelection(self):
+        '''When radio group changes, enable/disable the sample interval.'''
+        if self.takeSampleRadio.isChecked():
+            self.sampleIntervalGroup.setEnabled(True)
+        else:
+            self.sampleIntervalGroup.setEnabled(False)
