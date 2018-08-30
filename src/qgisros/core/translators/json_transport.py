@@ -1,4 +1,3 @@
-import json
 import json_transport
 from .translator import Translator, VectorTranslatorMixin
 
@@ -16,13 +15,10 @@ class JSONTransportTranslator(Translator, VectorTranslatorMixin):
         msg = msg.data
 
         if isinstance(msg, list):
-            geojson_msg = {
-                'type': 'FeatureCollection',
-                'features': msg
-            }
-        elif isinstance(msg, dict) and msg.get('type') == 'FeatureCollection':
             geojson_msg = msg
+        elif isinstance(msg, dict) and msg.get('type') == 'FeatureCollection':
+            geojson_msg = msg.get('features')
         else:
             raise ValueError('JSON message is not valid GeoJSON.')
 
-        return json.dumps(geojson_msg)
+        return geojson_msg

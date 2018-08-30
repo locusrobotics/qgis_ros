@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+export QGIS_PLUGINPATH=$(catkin_find --first-only qgis_ros src)
+export QGIS_ROS_EXTRA_TRANSLATORS='locusqgis.translators' # TODO remove after dev.
+# Point to the directory that contains the QGIS plugin (python package).
+# TODO: Therefore this will not work when installed.
+qgis

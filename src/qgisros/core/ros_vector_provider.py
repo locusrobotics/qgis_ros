@@ -1,7 +1,6 @@
 # Developed based on: https://github.com/qgis/QGIS/blob/master/tests/src/python/provider_python.py
 from threading import RLock
 import rospy
-from qgis.PyQt.QtCore import QTextCodec
 from qgis.core import (
     QgsFields,
     QgsVectorLayer,
@@ -19,14 +18,14 @@ from qgis.core import (
     QgsAbstractFeatureIterator,
     QgsFeatureIterator,
     QgsSpatialIndex,
-    QgsDataProvider,
-    QgsCsException,
-    QgsJsonUtils
+    QgsDataProvider
 )
+
+from PyQt5.QtCore import pyqtSignal
 
 from .crs import simpleCrs
 from .translator_registry import TranslatorRegistry
-
+from .helpers import featuresToQgs, parseUrlArgs
 
 # TODO: Make a non-global version.
 # This limits all ROSVectorProvider classes from updating the canvas more than once per second.
@@ -36,6 +35,8 @@ last_global_refresh = 0
 
 
 class ROSVectorProvider(QgsVectorDataProvider):
+
+    fieldsUpdated = pyqtSignal()
 
     @classmethod
     def providerKey(cls):
@@ -56,13 +57,12 @@ class ROSVectorProvider(QgsVectorDataProvider):
         Example uri: 'foo/my_pose?type=geometry_msgs/PoseStamped'
         '''
         try:
-            self._topic, args = uri.split('?')
-            args = args.split('&')
-            args = [a.split('=') for a in args]  # Pairs of (key, value)
-            args = dict(args)
+            self._topic, argString = uri.split('?')
         except IndexError:
             raise ValueError('uri Cannot be parsed. Is it valid? uri: {}'.format(uri))
 
+        # Parse string of arguments into dict of python types.
+        args = parseUrlArgs(argString)
         super().__init__(uri)
 
         self._translator = TranslatorRegistry.instance().get(args['type'])
@@ -83,22 +83,34 @@ class ROSVectorProvider(QgsVectorDataProvider):
         self._provider_options = providerOptions
         self.next_feature_id = 0  # TODO: Is there a more contained approach for numbering? Generator?
         self._lock = RLock()
+        self._subscriber = None
 
-        if args.get('index') in ('yes', 'true', 'True'):
+        self.keepOlderMessages = args.get('keepOlderMessages', False)
+
+        if args.get('index'):
             self.createSpatialIndex()
 
-        self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._ros_message_callback)
+        if args.get('subscribe'):
+            self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._handle_message)
+        else:
+            msg = rospy.wait_for_message(self._topic, self._translator.messageType, timeout=5)
+            self._handle_message(msg)
 
-    def _ros_message_callback(self, msg):
-        geojsonFeatures = self._translator.translate(msg)
-        codec = QTextCodec.codecForName("UTF-8")
-        fields = QgsJsonUtils.stringToFields(geojsonFeatures, codec)
-        features = QgsJsonUtils.stringToFeatureList(geojsonFeatures, fields, codec)
+    def _handle_message(self, msg):
+        features = self._translator.translate(msg)
+        qgsFeatures, fields = featuresToQgs(features)
 
+        # TODO: check if fields changed and emit a signal only then.
         self._fields = fields
+        self.fieldsUpdated.emit()
+
+        # If we're not accumulating history, clear features first.
+        if not self.keepOlderMessages:
+            self.next_feature_id = 0
+            self._features = {}  # Clear features.
 
         try:
-            self._setFeatures(features)
+            self._setFeatures(qgsFeatures)
         except RuntimeError:
             self._cleanup()
 
@@ -106,9 +118,8 @@ class ROSVectorProvider(QgsVectorDataProvider):
         global last_global_refresh
         now = rospy.get_time()
         if now - last_global_refresh > DATA_UPDATE_THROTTLE:
-            print(last_global_refresh)
             last_global_refresh = now
-            # self.dataChanged.emit()
+            self.dataChanged.emit()  # TODO: remove occasional flicker when this happens.
 
     def _cleanup(self):
         ''' Clean up ROS subscriber connection.
@@ -117,7 +128,9 @@ class ROSVectorProvider(QgsVectorDataProvider):
         cleanup activities on the Python side before the underlying C++ object is deleted, thus making this
         object unstable.  A RuntimeError is raised when this is detected. We'll perform cleanup at that point.
         '''
-        self._subscriber.unregister()
+        if self._subscriber:
+            self._subscriber.unregister()
+            self._subscriber = None
 
     def featureSource(self):
         with self._lock:
@@ -170,9 +183,6 @@ class ROSVectorProvider(QgsVectorDataProvider):
                 for f in self._features.values():
                     self._spatialindex.deleteFeature(f)
 
-            self.next_feature_id = 0
-            self._features = {}
-
             for _f in flist:
                 self._features[self.next_feature_id] = _f
                 _f.setId(self.next_feature_id)
@@ -216,7 +226,7 @@ class ROSVectorProvider(QgsVectorDataProvider):
         return True
 
     def capabilities(self):
-        return QgsVectorDataProvider.SelectAtId
+        return QgsVectorDataProvider.SelectAtId | QgsVectorDataProvider.CreateSpatialIndex
 
     def name(self):
         return self.providerKey()
@@ -264,7 +274,7 @@ class ROSVectorFeatureIterator(QgsAbstractFeatureIterator):
             )
         try:
             self._filter_rect = self.filterRectToSourceCrs(self._transform)
-        except QgsCsException as e:
+        except Exception as e:
             self.close()
             return
         self._filter_rect = self.filterRectToSourceCrs(self._transform)
