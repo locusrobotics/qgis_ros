@@ -32,6 +32,9 @@ class BagfileDialog(QDialog, FORM_CLASS):
         self.layerLoadProgress.connect(self._updateLoadProgress)
         self.takeRadioGroup.buttonClicked.connect(self._updateRadioSelection)
 
+        # Update UI depending on what the selected layer's data type is.
+        self.dataLoaderWidget.selectedTopicChanged.connect(self._updateDataLoadingOptions)
+
         self._bagFilePath = None
 
     def _getBagFileTopics(self):
@@ -122,3 +125,18 @@ class BagfileDialog(QDialog, FORM_CLASS):
             self.sampleIntervalGroup.setEnabled(True)
         else:
             self.sampleIntervalGroup.setEnabled(False)
+
+    def _updateDataLoadingOptions(self):
+        '''Adjust the available loading options if a raster is selected.
+
+        Raster data types aren't subscriptable. Must use Take Latest instead.
+        '''
+        name, topicType = self.dataLoaderWidget.getSelectedTopic()
+        dataModelType = TranslatorRegistry.instance().get(topicType).dataModelType
+        isRaster = dataModelType == 'Raster'
+
+        self.takeAllRadio.setEnabled(not isRaster)
+        self.takeSampleRadio.setEnabled(not isRaster)
+        self.takeLastRadio.setChecked(isRaster)
+
+        self._updateRadioSelection()

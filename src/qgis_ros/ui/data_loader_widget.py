@@ -4,6 +4,7 @@ from pathlib import Path
 from PyQt5 import uic
 
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QHeaderView
+from PyQt5.QtCore import pyqtSignal
 
 from ..core import TranslatorRegistry
 
@@ -12,10 +13,14 @@ FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'data_loade
 
 class DataLoaderWidget(QWidget, FORM_CLASS):
 
+    selectedTopicChanged = pyqtSignal()
+
     def __init__(self, parent=None):
         super(DataLoaderWidget, self).__init__(parent)
         self._showMessageCount = False
         self.setupUi(self)
+
+        self.tableWidget.itemSelectionChanged.connect(self.selectedTopicChanged)
 
     def setTopics(self, topicMetadata):
         '''Populates table with a new set of topicMetadata.'''
@@ -51,3 +56,4 @@ class DataLoaderWidget(QWidget, FORM_CLASS):
         topicType = self.tableWidget.item(row, 1).text()
 
         return topicName, topicType
+

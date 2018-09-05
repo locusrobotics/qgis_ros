@@ -13,21 +13,39 @@ class Translator(object):
     '''
 
     GeomTypes = QgsWkbTypes
-
     messageType = None
     geomType = GeomTypes.Unknown
 
-    # TODO: what are these for again?
-    # @classmethod
-    # def createLayer(cls, name, subscribe=False):
-    #     raise NotImplementedError(str(cls))
 
-    # @classmethod
-    # def translate(msg):
-    #     raise NotImplementedError()
+class RasterTranslatorMixin(object):
+    '''Translate input raster data to a GeoTIFF format.
+
+    Does not support subscription because we have not implemented a rosrasterprovider.
+    '''
+
+    dataModelType = 'Raster'
+
+    @classmethod
+    def createLayer(cls, topicName, rosMessages=None, **kwargs):
+        '''Creates a raster layer from a ROS message.
+        Unlike vector data, raster layers cannot currently be subscribed to.
+        '''
+        if rosMessages:
+            msg = rosMessages[0]
+        else:
+            msg = rospy.wait_for_message(topicName, cls.messageType, 10)
+
+        geotiffFilename = cls.translate(msg)
+        layer = QgsRasterLayer(geotiffFilename, topicName)
+        return layer
 
 
 class VectorTranslatorMixin(object):
+    '''handles vector topic data.
+
+    Creates and returns a layer using the rosvectorprovider, which knows how to
+    subscribe to or capture the latest message from a vector topic.
+    '''
 
     dataModelType = 'Vector'
 
@@ -67,29 +85,12 @@ class VectorTranslatorMixin(object):
             return layer
 
 
-class RasterTranslatorMixin(object):
+class TableTranslatorMixin(VectorTranslatorMixin):
+    '''Handles non-spatial attribute data.
 
-    dataModelType = 'Raster'
-
-    @classmethod
-    def createLayer(cls, topicName, rosMessages=None, **kwargs):
-        '''Creates a raster layer from a ROS message.
-        Unlike vector data, raster layers cannot currently be subscribed to.
-        '''
-        if rosMessages:
-            msg = rosMessages[0]
-        else:
-            msg = rospy.wait_for_message(topicName, cls.messageType, 10)
-
-        geotiffFilename = cls.translate(msg)
-        layer = QgsRasterLayer(geotiffFilename, topicName)
-        return layer
-
-
-class TableTranslatorMixin(object):
+    Behaves the same as a VectorTranslatorMixin because we use the same provider to handle
+    subscribing and all that ROS stuff. It just naturally supports GeoJSON Feature data without
+    geometry.
+    '''
 
     dataModelType = 'Table'
-
-    @classmethod
-    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False):
-        pass

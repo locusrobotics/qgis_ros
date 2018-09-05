@@ -4,7 +4,7 @@ import threading
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog
-from PyQt5.QtCore import QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QTimer, pyqtSignal
 
 from qgis.core import QgsProject
 
@@ -25,7 +25,7 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super(ROSMasterDialog, self).__init__(parent)
         self.setupUi(self)
-        self.dataLoaderWidget.tableWidget.removeColumn(2)  # Don't need "count" field.
+        self.dataLoaderWidget.tableWidget.removeColumn(3)  # Don't need "count" field.
 
         self.addLayerButton.clicked.connect(self._createLayerFromSelected)
         self.layerCreated.connect(self._addCreatedLayer)
@@ -34,6 +34,12 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
         self.checkMasterTimer = QTimer()
         self.checkMasterTimer.timeout.connect(self._checkForMaster)
         self.checkMasterTimer.start(2000)
+
+        # Update UI depending on which data loading method is selected.
+        self.subscribeRadioGroup.buttonClicked.connect(self._updateKeepOlderMessagesCheckbox)
+
+        # Update UI depending on what the selected layer's data type is.
+        self.dataLoaderWidget.selectedTopicChanged.connect(self._updateDataLoadingOptions)
 
         # Report current state of ROS MASTER search to user.
         masterUri = os.environ.get('ROS_MASTER_URI')
@@ -44,7 +50,6 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
             self.checkMasterTimer.stop()
         self.searchMasterLabel.setText(label)
 
-    @pyqtSlot()
     def _checkForMaster(self):
         try:
             rosgraph.Master('/rostopic').getPid()
@@ -63,7 +68,6 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
         topicMetadata = [(topicName, topicType) for topicName, topicType in rospy.get_published_topics()]
         self.dataLoaderWidget.setTopics(topicMetadata)
 
-    @pyqtSlot()
     def _createLayerFromSelected(self):
         threading.Thread(name='createLayerThread', target=self._createLayerWorker).start()
 
@@ -77,6 +81,22 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
         layer = translator.createLayer(name, subscribe=subscribe, keepOlderMessages=keepOlderMessages)
         self.layerCreated.emit(layer)  # Need to add layer from main thread.
 
-    @pyqtSlot(object)
     def _addCreatedLayer(self, layer):
         QgsProject.instance().addMapLayer(layer)
+
+    def _updateKeepOlderMessagesCheckbox(self):
+        self.keepOlderMessagesCheckbox.setEnabled(not self.takeLatestRadio.isChecked())
+
+    def _updateDataLoadingOptions(self):
+        '''Adjust the available loading options if a raster is selected.
+
+        Raster data types aren't subscriptable. Must use Take Latest instead.
+        '''
+        name, topicType = self.dataLoaderWidget.getSelectedTopic()
+        dataModelType = TranslatorRegistry.instance().get(topicType).dataModelType
+        isRaster = dataModelType == 'Raster'
+
+        self.subscribeRadio.setEnabled(not isRaster)
+        self.takeLatestRadio.setChecked(isRaster)
+
+        self._updateKeepOlderMessagesCheckbox()

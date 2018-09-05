@@ -1,8 +1,8 @@
 from std_msgs.msg import String
-from .translator import Translator, VectorTranslatorMixin
+from .translator import Translator, TableTranslatorMixin
 
 
-class StringTranslator(Translator, VectorTranslatorMixin):
+class StringTranslator(Translator, TableTranslatorMixin):
 
     messageType = String
     geomType = Translator.GeomTypes.NoGeometry

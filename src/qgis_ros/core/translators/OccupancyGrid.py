@@ -1,6 +1,5 @@
 import uuid
 import json
-import os
 from pathlib import Path
 import subprocess
 
@@ -40,11 +39,10 @@ class OccupancyGridTranslator(Translator, RasterTranslatorMixin):
         # Run external translator.
         geotiffFilename = '/tmp/{}.tif'.format(uuid.uuid4())
 
-        # TODO use catkin to find the script. Oh my.
-        rasterize_script = catkin_find(project='qgis-ros', path='scripts/msg_to_geotiff.py', first_match_only=True)[0]
-        # script = str(Path(os.path.dirname(os.path.realpath(__file__))) / '..' / '..' / '..' / '..' / 'scripts' / 'msg_to_geotiff.py')
+        script_dir = catkin_find(project='qgis_ros', path='scripts', first_match_only=True)[0]
+        rasterize_script = Path(script_dir) / 'msg_to_geotiff.py'
 
-        subprocess.check_call([rasterize_script, datafile, geotiffFilename])
+        subprocess.check_call([str(rasterize_script), datafile, geotiffFilename])
 
         # Return filename.
         return geotiffFilename
