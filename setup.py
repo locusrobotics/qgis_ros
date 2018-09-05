@@ -5,10 +5,10 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 setup_args = generate_distutils_setup(
     packages=[
-        'qgisros',
-        'qgisros.core',
-        'qgisros.core.translators',
-        'qgisros.ui'
+        'qgis_ros',
+        'qgis_ros.core',
+        'qgis_ros.core.translators',
+        'qgis_ros.ui'
     ],
     package_dir={'': 'src'})
 

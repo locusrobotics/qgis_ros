@@ -44,6 +44,7 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
             self.checkMasterTimer.stop()
         self.searchMasterLabel.setText(label)
 
+    @pyqtSlot()
     def _checkForMaster(self):
         try:
             rosgraph.Master('/rostopic').getPid()
@@ -62,6 +63,7 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
         topicMetadata = [(topicName, topicType) for topicName, topicType in rospy.get_published_topics()]
         self.dataLoaderWidget.setTopics(topicMetadata)
 
+    @pyqtSlot()
     def _createLayerFromSelected(self):
         threading.Thread(name='createLayerThread', target=self._createLayerWorker).start()
 

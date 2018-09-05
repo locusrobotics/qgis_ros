@@ -1,5 +1,6 @@
 from nav_msgs.msg import Odometry
 from .translator import Translator, VectorTranslatorMixin
+from ..helpers import quaternionToYaw
 
 
 class OdometryTranslator(Translator, VectorTranslatorMixin):
@@ -16,7 +17,7 @@ class OdometryTranslator(Translator, VectorTranslatorMixin):
                 'coordinates': [msg.pose.pose.position.x, msg.pose.pose.position.y]
             },
             'properties': {
-                'yaw': 1.0,  # TODO
+                'yaw': quaternionToYaw(msg.pose.pose.orientation),
                 'stamp': msg.header.stamp.to_sec(),
             }
         }]

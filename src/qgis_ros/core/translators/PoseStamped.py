@@ -1,5 +1,6 @@
 from geometry_msgs.msg import PoseStamped
 from .translator import Translator, VectorTranslatorMixin
+from ..helpers import quaternionToYaw
 
 
 class PoseStampedTranslator(Translator, VectorTranslatorMixin):
@@ -16,7 +17,7 @@ class PoseStampedTranslator(Translator, VectorTranslatorMixin):
                 'coordinates': [msg.pose.position.x, msg.pose.position.y]
             },
             'properties': {
-                'yaw': 1.0,  # TODO
+                'yaw': quaternionToYaw(msg.pose.orientation),
                 'stamp': msg.header.stamp.to_sec(),
             }
         }]

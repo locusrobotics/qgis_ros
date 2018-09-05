@@ -30,16 +30,20 @@ class DataLoaderWidget(QWidget, FORM_CLASS):
         # Populate table.
         self.tableWidget.setRowCount(len(topicMetadata))
         for row, topicMetadata in enumerate(topicMetadata):
+            dataModelType = TranslatorRegistry.instance().get(topicMetadata[1]).dataModelType
             self.tableWidget.setItem(row, 0, QTableWidgetItem(topicMetadata[0]))
             self.tableWidget.setItem(row, 1, QTableWidgetItem(topicMetadata[1]))
+            self.tableWidget.setItem(row, 2, QTableWidgetItem(dataModelType))
+
             try:
-                self.tableWidget.setItem(row, 2, QTableWidgetItem(str(topicMetadata[2])))
+                self.tableWidget.setItem(row, 3, QTableWidgetItem(str(topicMetadata[2])))
             except Exception:
                 pass  # No data count available.
 
         header = self.tableWidget.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
 
     def getSelectedTopic(self):
         row = self.tableWidget.currentRow()

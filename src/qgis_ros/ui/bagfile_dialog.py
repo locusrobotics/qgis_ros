@@ -16,6 +16,7 @@ FORM_CLASS, _ = uic.loadUiType(str(Path(os.path.dirname(__file__)) / 'bagfile_di
 class BagfileDialog(QDialog, FORM_CLASS):
 
     layerCreated = pyqtSignal(object)
+    bagContentsRetrieved = pyqtSignal(object)
     layerLoadProgress = pyqtSignal(int)
 
     def __init__(self, parent=None):
@@ -26,6 +27,7 @@ class BagfileDialog(QDialog, FORM_CLASS):
         self.addLayerButton.clicked.connect(self._createLayerFromSelected)
         self.unloadBagButton.clicked.connect(self._unloadBag)
 
+        self.bagContentsRetrieved.connect(self._tabulateBagContents)
         self.layerCreated.connect(self._addCreatedLayer)
         self.layerLoadProgress.connect(self._updateLoadProgress)
         self.takeRadioGroup.buttonClicked.connect(self._updateRadioSelection)
@@ -46,9 +48,20 @@ class BagfileDialog(QDialog, FORM_CLASS):
         threading.Thread(name='getBagTopicsThread', target=self._getBagContentsWorker).start()
 
     def _getBagContentsWorker(self):
+        '''Get bagfile contents in a thread.
+
+        This can take a long time depending on size of bag.
+
+        Must use a signal to pass results back as UI components can only safely
+        be manipulated in the main thread.
+        '''
         topicMetadata = helpers.getTopicsFromBag(self._bagFilePath)
+        self.bagContentsRetrieved.emit(topicMetadata)
+
+    @pyqtSlot(object)
+    def _tabulateBagContents(self, metadata):
         self.currentBagPathLabel.setText(self._bagFilePath)
-        self.dataLoaderWidget.setTopics(topicMetadata)
+        self.dataLoaderWidget.setTopics(metadata)
         self.stackedWidget.setCurrentWidget(self.dataLoaderWidgetContainer)
         self.openBagButton.setText('Open Bag...')
         self.openBagButton.setEnabled(True)

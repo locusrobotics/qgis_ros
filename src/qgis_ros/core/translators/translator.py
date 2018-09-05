@@ -15,7 +15,6 @@ class Translator(object):
     GeomTypes = QgsWkbTypes
 
     messageType = None
-    dataModelType = None
     geomType = GeomTypes.Unknown
 
     # TODO: what are these for again?
@@ -85,3 +84,12 @@ class RasterTranslatorMixin(object):
         geotiffFilename = cls.translate(msg)
         layer = QgsRasterLayer(geotiffFilename, topicName)
         return layer
+
+
+class TableTranslatorMixin(object):
+
+    dataModelType = 'Table'
+
+    @classmethod
+    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False):
+        pass

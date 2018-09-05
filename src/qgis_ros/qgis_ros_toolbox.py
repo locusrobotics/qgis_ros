@@ -27,9 +27,9 @@ class QgisRos(object):
         # Register all actions for cleanup on plugin unload.
         self.actions = []
 
-        self.menu = 'QGIS ROS'
-        self.toolbar = self.iface.addToolBar(u'QgisRos')
-        self.toolbar.setObjectName(u'QgisRos')
+        self.menu = 'QGIS-ROS'
+        self.toolbar = self.iface.addToolBar('QGIS-ROS')
+        self.toolbar.setObjectName('QGIS-ROS')
 
         # Register the ROS vector data provider.
         metadata = QgsProviderMetadata(
@@ -45,7 +45,7 @@ class QgisRos(object):
     def initGui(self):
         toolbarButtons = [
             ('Load Bag Data...', self.bagFileDialog),
-            ('Load Topic Data', self.rosMasterDialog)
+            ('Load Topic Data...', self.rosMasterDialog)
         ]
 
         # Assemble the toolbar buttons.
@@ -58,10 +58,6 @@ class QgisRos(object):
 
     def unload(self):
         for action in self.actions:
-            self.iface.removePluginMenu('QGIS ROS', action)
+            self.iface.removePluginMenu('QGIS-ROS', action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar  # Deref to ensure C++ cleanup.
-
-    # TODO remove?
-    # def run(self):
-        # self.dialog.show()

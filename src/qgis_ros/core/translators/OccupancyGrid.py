@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 
+from catkin.find_in_workspaces import find_in_workspaces as catkin_find
 from nav_msgs.msg import OccupancyGrid
 
 from .translator import Translator, RasterTranslatorMixin
@@ -21,8 +22,6 @@ class OccupancyGridTranslator(Translator, RasterTranslatorMixin):
 
     @staticmethod
     def translate(msg):
-        '''Translate an OccupancyGrid message into an output GeoTIFF file.'''
-
         datafile = '/tmp/{}.json'.format(uuid.uuid4())
 
         data = {
@@ -41,10 +40,11 @@ class OccupancyGridTranslator(Translator, RasterTranslatorMixin):
         # Run external translator.
         geotiffFilename = '/tmp/{}.tif'.format(uuid.uuid4())
 
-        # TODO use catkin to find the script.
-        script = str(Path(os.path.dirname(os.path.realpath(__file__))) / '..' / '..' / '..' / '..' / 'scripts' / 'msg_to_geotiff.py')
+        # TODO use catkin to find the script. Oh my.
+        rasterize_script = catkin_find(project='qgis-ros', path='scripts/msg_to_geotiff.py', first_match_only=True)[0]
+        # script = str(Path(os.path.dirname(os.path.realpath(__file__))) / '..' / '..' / '..' / '..' / 'scripts' / 'msg_to_geotiff.py')
 
-        subprocess.check_call([script, datafile, geotiffFilename])
+        subprocess.check_call([rasterize_script, datafile, geotiffFilename])
 
         # Return filename.
         return geotiffFilename

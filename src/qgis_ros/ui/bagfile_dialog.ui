@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Load Bag Data</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -241,7 +241,7 @@
   <customwidget>
    <class>DataLoaderWidget</class>
    <extends>QWidget</extends>
-   <header>qgisros/ui/data_loader_widget.h</header>
+   <header>qgis_ros/ui/data_loader_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
