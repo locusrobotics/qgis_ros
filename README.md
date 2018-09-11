@@ -12,6 +12,7 @@ A QGIS plugin for interacting with data from ROS topics and bags.
 QGIS can be installed from: https://qgis.org/en/site/forusers/download.html You need to add a PPA if using Ubuntu 16.04.
 
 ## Installation
+QGIS ROS is a valid Catkin package. Download and build:
 
 ```bash
 cd ~/my_ros_ws/src/
@@ -21,14 +22,14 @@ catkin build
 
 ## Use
 
-Simple
+Simple:
 ```bash
 rosrun qgis_ros start_qgis_ros
 ```
 
 With custom ROS Message Translators:
-```
-QGIS_ROS_EXTRA_TRANSLATORS='custompythonmodule.translators'
+```bash
+export QGIS_ROS_EXTRA_TRANSLATORS='custompythonmodule.translators'
 rosrun qgis_ros start_qgis_ros
 ```
 
@@ -46,7 +47,7 @@ QGIS is able to read and write data from hundreds of formats and sources by tran
 
 Check out the source code for more details.
 
-# TODO: add an example to the ROSCon presentation repository and link here.
+TODO: add an example to the ROSCon presentation repository and link here.
 
 ## Contributions
 

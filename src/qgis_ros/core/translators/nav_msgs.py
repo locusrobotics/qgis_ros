@@ -4,9 +4,30 @@ from pathlib import Path
 import subprocess
 
 from catkin.find_in_workspaces import find_in_workspaces as catkin_find
-from nav_msgs.msg import OccupancyGrid
+from nav_msgs.msg import OccupancyGrid, Odometry
 
-from .translator import Translator, RasterTranslatorMixin
+from .translator import Translator, RasterTranslatorMixin, VectorTranslatorMixin
+from ..helpers import quaternionToYaw
+
+
+class OdometryTranslator(Translator, VectorTranslatorMixin):
+
+    messageType = Odometry
+    geomType = Translator.GeomTypes.Point
+
+    @staticmethod
+    def translate(msg):
+        return [{
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [msg.pose.pose.position.x, msg.pose.pose.position.y]
+            },
+            'properties': {
+                'yaw': quaternionToYaw(msg.pose.pose.orientation),
+                'stamp': msg.header.stamp.to_sec(),
+            }
+        }]
 
 
 class OccupancyGridTranslator(Translator, RasterTranslatorMixin):
