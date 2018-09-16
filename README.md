@@ -1,11 +1,11 @@
-# ROS QGIS Plugin
+# QGIS-ROS
 
 A QGIS plugin for interacting with data from ROS topics and bags.
 
 ## Requirements
 
 - Ubuntu >= 16.04
-- Python 3.5 (QGIS takes care of this, but Ubuntu should have it)
+- Python 3.5
 - QGIS >= 3.1
 - ROS 1
 
@@ -21,7 +21,7 @@ catkin build
 
 ## Use
 
-Simple
+Simple:
 ```bash
 rosrun qgis_ros start_qgis_ros
 ```
