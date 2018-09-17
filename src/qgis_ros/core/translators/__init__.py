@@ -1,23 +1,27 @@
 from .translator import Translator, VectorTranslatorMixin, RasterTranslatorMixin
-from .JsonTransport import JSONTransportTranslator
-from .OccupancyGrid import OccupancyGridTranslator
-from .Odometry import OdometryTranslator
-from .Pose2d import Pose2DTranslator
-from .PoseStamped import PoseStampedTranslator
-from .String import StringTranslator
+
+from .geometry_msgs import Pose2DTranslator, PoseStampedTranslator
+from .json_transport import JSONTransportTranslator
+from .nav_msgs import OccupancyGridTranslator, OdometryTranslator
+from .std_msgs import StringTranslator
+from .wireless_msgs import ConnectionTranslator
+
 
 __all__ = [
     'Translator',
     'VectorTranslatorMixin',
     'RasterTranslatorMixin',
-    'TableTranslatorMixin'
+    'TableTranslatorMixin',
+    'builtinTranslators'
 ]
 
+
 builtinTranslators = (
+    ConnectionTranslator,
     JSONTransportTranslator,
     OccupancyGridTranslator,
     OdometryTranslator,
     Pose2DTranslator,
     PoseStampedTranslator,
-    StringTranslator,
+    StringTranslator
 )

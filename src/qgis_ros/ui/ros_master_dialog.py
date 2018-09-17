@@ -76,9 +76,17 @@ class ROSMasterDialog(QDialog, FORM_CLASS):
 
         subscribe = self.subscribeRadio.isChecked()
         keepOlderMessages = self.keepOlderMessagesCheckbox.isChecked()
+        sampleInterval = self.sampleIntervalBox.value()
 
         translator = TranslatorRegistry.instance().get(topicType)
-        layer = translator.createLayer(name, subscribe=subscribe, keepOlderMessages=keepOlderMessages)
+
+        layer = translator.createLayer(
+            name,
+            subscribe=subscribe,
+            keepOlderMessages=keepOlderMessages,
+            sampleInterval=sampleInterval
+        )
+
         self.layerCreated.emit(layer)  # Need to add layer from main thread.
 
     def _addCreatedLayer(self, layer):

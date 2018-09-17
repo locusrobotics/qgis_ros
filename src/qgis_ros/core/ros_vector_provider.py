@@ -29,7 +29,7 @@ from .helpers import featuresToQgs, parseUrlArgs
 
 # TODO: Make a non-global version.
 # This limits all ROSVectorProvider classes from updating the canvas more than once per second.
-DATA_UPDATE_THROTTLE = 1.0  # float seconds
+DATA_UPDATE_THROTTLE = 2.0  # float seconds
 global last_global_refresh
 last_global_refresh = 0
 
@@ -81,22 +81,29 @@ class ROSVectorProvider(QgsVectorDataProvider):
         self._subset_string = ''
         self._spatialindex = None
         self._provider_options = providerOptions
-        self.next_feature_id = 0  # TODO: Is there a more contained approach for numbering? Generator?
+        self.next_feature_id = 0  # TODO: Consider a generator for a better numbering approach.
         self._lock = RLock()
         self._subscriber = None
 
         self.keepOlderMessages = args.get('keepOlderMessages', False)
+        self._handledMessageCount = 0
+        self.sampleInterval = int(args.get('sampleInterval', 1))
 
         if args.get('index'):
             self.createSpatialIndex()
 
         if args.get('subscribe'):
-            self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._handle_message)
+            self._subscriber = rospy.Subscriber(self._topic, self._translator.messageType, self._handleMessage)
         else:
             msg = rospy.wait_for_message(self._topic, self._translator.messageType, timeout=5)
-            self._handle_message(msg)
+            self._handleMessage(msg)
 
-    def _handle_message(self, msg):
+    def _handleMessage(self, msg):
+        self._handledMessageCount += 1
+        # Skip message if not on interval.
+        if (self._handledMessageCount - 1) % self.sampleInterval:  # -1 so that first message is handled.
+            return
+
         features = self._translator.translate(msg)
         qgsFeatures, fields = featuresToQgs(features)
 
