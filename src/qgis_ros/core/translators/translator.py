@@ -50,7 +50,7 @@ class VectorTranslatorMixin(object):
     dataModelType = 'Vector'
 
     @classmethod
-    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False):
+    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False, sampleInterval=1):
         if rosMessages:
             # Features were passed in, so it's a static data layer.
             geomType = QgsWkbTypes.displayString(cls.geomType)  # Get string version of geomtype enum.
@@ -69,11 +69,12 @@ class VectorTranslatorMixin(object):
             return layer
         else:
             # No features, it must be a ROS topic to get data from.
-            uri = '{}?type={}&index=no&subscribe={}&keepOlderMessages={}'.format(
+            uri = '{}?type={}&index=no&subscribe={}&keepOlderMessages={}&sampleInterval={}'.format(
                 topicName,
                 cls.messageType._type,
                 subscribe,
-                keepOlderMessages
+                keepOlderMessages,
+                sampleInterval
             )
             layer = QgsVectorLayer(uri, topicName, 'rosvectorprovider')
 

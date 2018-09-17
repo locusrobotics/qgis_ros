@@ -56,4 +56,3 @@ class DataLoaderWidget(QWidget, FORM_CLASS):
         topicType = self.tableWidget.item(row, 1).text()
 
         return topicName, topicType
-

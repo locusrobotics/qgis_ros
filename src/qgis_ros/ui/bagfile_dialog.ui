@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1200</width>
-    <height>1000</height>
+    <height>747</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -112,6 +112,9 @@
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
                  <widget class="QRadioButton" name="takeAllRadio">
+                  <property name="toolTip">
+                   <string>Take every message from the bagfile</string>
+                  </property>
                   <property name="text">
                    <string>Take All</string>
                   </property>
@@ -125,6 +128,9 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="takeLastRadio">
+                  <property name="toolTip">
+                   <string>Take only the most recent message (typically for latched data)</string>
+                  </property>
                   <property name="text">
                    <string>Take Last</string>
                   </property>
@@ -138,6 +144,9 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="takeSampleRadio">
+                  <property name="toolTip">
+                   <string>Take every nth message from the bagfile.</string>
+                  </property>
                   <property name="text">
                    <string>Take Sample</string>
                   </property>
@@ -157,6 +166,9 @@
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
                  <widget class="QLabel" name="label_2">
+                  <property name="toolTip">
+                   <string>Record only every nth message from the bagfile.</string>
+                  </property>
                   <property name="text">
                    <string>Sample Interval:</string>
                   </property>
@@ -164,6 +176,9 @@
                 </item>
                 <item>
                  <widget class="QSpinBox" name="sampleIntervalBox">
+                  <property name="toolTip">
+                   <string>Record only every nth message from the bagfile.</string>
+                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -193,6 +208,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="addLayerButton">
+            <property name="toolTip">
+             <string>Add selected layer to the QGIS layer manager pane</string>
+            </property>
             <property name="text">
              <string>Add Layer</string>
             </property>

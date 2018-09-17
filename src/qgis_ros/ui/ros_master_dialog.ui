@@ -90,6 +90,9 @@
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
                  <widget class="QRadioButton" name="subscribeRadio">
+                  <property name="toolTip">
+                   <string>Continually capture messages published to selected topic</string>
+                  </property>
                   <property name="text">
                    <string>Subscribe</string>
                   </property>
@@ -103,6 +106,9 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="takeLatestRadio">
+                  <property name="toolTip">
+                   <string>Take only the most recent message (typically for latched data)</string>
+                  </property>
                   <property name="text">
                    <string>Take Latest</string>
                   </property>
@@ -114,6 +120,19 @@
                   </attribute>
                  </widget>
                 </item>
+                <item>
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
                </layout>
               </widget>
              </item>
@@ -121,9 +140,38 @@
               <widget class="QWidget" name="widget_3" native="true">
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
-                 <widget class="QCheckBox" name="keepOlderMessagesCheckbox">
+                 <widget class="QLabel" name="label_2">
+                  <property name="toolTip">
+                   <string>When subscribed, record only every nth message</string>
+                  </property>
                   <property name="text">
-                   <string>Keep older messages</string>
+                   <string>Sample Interval:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="sampleIntervalBox">
+                  <property name="toolTip">
+                   <string>When subscribed, record only every nth message</string>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="keepOlderMessagesCheckbox">
+                  <property name="toolTip">
+                   <string>When checked, all messages are preserved as records, instead of only the latest message</string>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::RightToLeft</enum>
+                  </property>
+                  <property name="text">
+                   <string>Keep older messages:</string>
                   </property>
                  </widget>
                 </item>
@@ -148,6 +196,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="addLayerButton">
+            <property name="toolTip">
+             <string>Add selected layer to the QGIS layer manager pane</string>
+            </property>
             <property name="text">
              <string>Add Layer</string>
             </property>
