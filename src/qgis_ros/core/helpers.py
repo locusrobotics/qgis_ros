@@ -6,6 +6,8 @@ from qgis.core import QgsJsonUtils
 
 import rosbag
 
+from .translator_registry import TranslatorRegistry
+
 
 def featuresToQgs(features):
     '''Accepts a list of geojson Features and returns a tuple of (features, fields)'''
@@ -42,29 +44,31 @@ def getTopicsFromBag(filePath):
     return t
 
 
-def getBagData(filePath, topicName, sampleInterval=1, takeLast=False, progressCallback=None):
+def getBagDataAsLayer(filePath, topicName, topicType, sampleInterval=1, takeLast=False, progressCallback=None):
     '''Returns a collection of messages from a bag.
     Invokes a progress callback every 1000 elements as this can be long running.
     '''
     count = 0
-    lastMessage = None
-    data = []
+    messages = []
+    timestamps = []
 
     with rosbag.Bag(filePath, 'r') as bag:
         for topic, message, time in bag.read_messages(topics=topicName):
             count += 1
             if count % sampleInterval == 0:  # Append every sampleInterval message.
-                data.append(message)
-                lastMessage = message
+                messages.append(message)
+                timestamps.append({'bagTimestamp': time.to_sec()})
 
             # Invoke progress callback every 1000 messages.
             if count % 1000 == 0 and progressCallback:
                 progressCallback(count)
 
     if takeLast:
-        data = [lastMessage]
+        messages = messages[-1]
+        timestamps = timestamps[-1]
 
-    return data
+    translator = TranslatorRegistry.instance().get(topicType)
+    return translator.createLayer(topicName, rosMessages=messages, bagTimestamps=timestamps)
 
 
 def quaternionToYaw(q):

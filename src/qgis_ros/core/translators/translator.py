@@ -62,6 +62,11 @@ class VectorTranslatorMixin(object):
             for m in rosMessages:
                 features += cls.translate(m)
 
+            # optionally merge extra properties to features.
+            if extraProperties is not None:
+                for n, props in enumerate(extraProperties):
+                    features[n]['properties'].update(props)
+
             qgsFeatures, fields = featuresToQgs(features)
             layer.dataProvider().addAttributes(fields)
             layer.dataProvider().addFeatures(qgsFeatures)

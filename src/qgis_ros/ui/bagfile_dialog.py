@@ -77,7 +77,7 @@ class BagfileDialog(QDialog, FORM_CLASS):
         threading.Thread(name='createLayerThread', target=self._createLayerWorker).start()
 
     def _createLayerWorker(self):
-        name, topicType = self.dataLoaderWidget.getSelectedTopic()
+        topicName, topicType = self.dataLoaderWidget.getSelectedTopic()
 
         # Defaults for taking all messages.
         sampleInterval = 1
@@ -88,16 +88,15 @@ class BagfileDialog(QDialog, FORM_CLASS):
         elif self.takeLastRadio.isChecked():  # Take last.
             takeLast = True
 
-        messages = helpers.getBagData(
+        layer = helpers.getBagDataAsLayer(
             self._bagFilePath,
-            name,
+            topicName,
+            topicType,
             sampleInterval=sampleInterval,
             takeLast=takeLast,
             progressCallback=self.layerLoadProgress.emit
         )
 
-        translator = TranslatorRegistry.instance().get(topicType)
-        layer = translator.createLayer(name, rosMessages=messages)
         self.layerCreated.emit(layer)  # Need to add layer from main thread.
 
         self.addLayerButton.setText('Add Layer')
