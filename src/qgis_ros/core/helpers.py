@@ -50,14 +50,14 @@ def getBagDataAsLayer(filePath, topicName, topicType, sampleInterval=1, takeLast
     '''
     count = 0
     messages = []
-    timestamps = []
+    extraProperties = []
 
     with rosbag.Bag(filePath, 'r') as bag:
         for topic, message, time in bag.read_messages(topics=topicName):
             count += 1
             if count % sampleInterval == 0:  # Append every sampleInterval message.
                 messages.append(message)
-                timestamps.append({'bagTimestamp': time.to_sec()})
+                extraProperties.append({'bagTimestamp': time.to_sec()})
 
             # Invoke progress callback every 1000 messages.
             if count % 1000 == 0 and progressCallback:
@@ -65,10 +65,10 @@ def getBagDataAsLayer(filePath, topicName, topicType, sampleInterval=1, takeLast
 
     if takeLast:
         messages = messages[-1]
-        timestamps = timestamps[-1]
+        extraProperties = extraProperties[-1]
 
     translator = TranslatorRegistry.instance().get(topicType)
-    return translator.createLayer(topicName, rosMessages=messages, bagTimestamps=timestamps)
+    return translator.createLayer(topicName, rosMessages=messages, extraProperties=extraProperties)
 
 
 def quaternionToYaw(q):

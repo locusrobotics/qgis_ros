@@ -50,7 +50,8 @@ class VectorTranslatorMixin(object):
     dataModelType = 'Vector'
 
     @classmethod
-    def createLayer(cls, topicName, rosMessages=None, subscribe=False, keepOlderMessages=False, sampleInterval=1):
+    def createLayer(cls, topicName, rosMessages=None, extraProperties=None, subscribe=False, keepOlderMessages=False,
+                    sampleInterval=1):
         if rosMessages:
             # Features were passed in, so it's a static data layer.
             geomType = QgsWkbTypes.displayString(cls.geomType)  # Get string version of geomtype enum.
@@ -59,13 +60,15 @@ class VectorTranslatorMixin(object):
 
             # Convert from ROS messages to GeoJSON Features to QgsFeatures.
             features = []
-            for m in rosMessages:
-                features += cls.translate(m)
+            for n, m in enumerate(rosMessages):
+                translatedFeatures = cls.translate(m)  # Append one or more features.
 
-            # optionally merge extra properties to features.
-            if extraProperties is not None:
-                for n, props in enumerate(extraProperties):
-                    features[n]['properties'].update(props)
+                # Optionally merge extra properties like bag timestamps in to features created by this message.
+                if extraProperties is not None:
+                    for f in translatedFeatures:
+                        f['properties'].update(extraProperties[n])
+
+                features += translatedFeatures
 
             qgsFeatures, fields = featuresToQgs(features)
             layer.dataProvider().addAttributes(fields)
