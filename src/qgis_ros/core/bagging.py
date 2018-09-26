@@ -33,8 +33,8 @@ def getBagDataAsLayer(filePath, topicName, topicType, sampleInterval=1, takeLast
                 progressCallback(count)
 
     if takeLast:
-        messages = messages[-1]
-        extraProperties = extraProperties[-1]
+        messages = [messages[-1]]
+        extraProperties = [extraProperties[-1]]
 
     translator = TranslatorRegistry.instance().get(topicType)
     return translator.createLayer(topicName, rosMessages=messages, extraProperties=extraProperties)
