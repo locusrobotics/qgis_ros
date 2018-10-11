@@ -2,6 +2,8 @@
 
 A QGIS plugin for interacting with data from ROS topics and bags.
 
+The ROSCon 2018 Presentation on QGIS-ROS can be found here: https://vimeo.com/293539252
+
 ## Requirements
 
 - Ubuntu >= 16.04
@@ -47,7 +49,12 @@ QGIS is able to read and write data from hundreds of formats and sources by tran
 
 Check out the source code for more details.
 
-TODO: add an example to the ROSCon presentation repository and link here.
+## Troubleshooting
+
+### My topic does not appear in the list of topics
+Only topics that have ROS Message Translators will appear. Not every message has been implemented. If your message is custom, look above for how to create a custom translator. If it is standard to ROS, create an issue or raise a Pull Request with a new one.TODO: add an example to the ROSCon presentation repository and link here.
+51
+
 
 ## Contributions
 
