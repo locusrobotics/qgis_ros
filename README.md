@@ -19,8 +19,15 @@ QGIS ROS is a valid Catkin package. Download and build:
 ```bash
 cd ~/my_ros_ws/src/
 git clone git@github.com:locusrobotics/qgis_ros.git
+git clone git@github.com/:learpathrobotics/wireless.git  # Temporary
+git clone git@github.com:locusrobotics/json_transport.git  # Temporary
 catkin build
+
+cd ~/my_ros_ws/src/qgis_ros
+pip3.5 install -r requirements.txt  # Temporary
 ```
+
+Note that the temporary dependencies will be addressed by https://github.com/locusrobotics/qgis_ros/issues/9
 
 ## Use
 
