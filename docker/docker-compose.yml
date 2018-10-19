@@ -1,0 +1,10 @@
+version: '3'
+services:
+  qgis_ros_test:
+    build: .
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+    volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    command: /bin/bash -c "source ~/catkin_ws/devel/setup.bash && rosrun qgis_ros start_qgis_ros"

@@ -1,3 +1,2 @@
-gnupg
-msgpack
-rospkg
+ msgpack
+ rospkg
