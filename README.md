@@ -20,7 +20,7 @@ git clone git@github.com:locusrobotics/json_transport.git
 catkin build
 
 cd ~/my_ros_ws/src/qgis_ros
-pip3 install msgpack  # json_transport dependency that doesn't install for Python 3.
+pip3 install -r requirements.txt
 ```
 
 ## Usage (source)
