@@ -1,6 +1,6 @@
 FROM osrf/ros:lunar-desktop-full-xenial
 
-### Installing system packages (your responsibility)
+### Installing system packages (system owner's responsibility)
 RUN apt update && \
     apt install -y wget software-properties-common python3-pip python-catkin-tools
 
@@ -21,6 +21,7 @@ RUN /bin/bash -c " \
     cd ~/catkin_ws/ && \
     catkin init && \
     git clone http://github.com/locusrobotics/qgis_ros.git src/qgis_ros && \
-    git clone http://github.com/locusrobotics/json_transport.git src/json_transport && \
     git clone http://github.com/clearpathrobotics/wireless.git src/wireless && \
+    rosdep install --from-paths src --ignore-src -yi && \
+    pip3 install msgpack && \
     catkin build"

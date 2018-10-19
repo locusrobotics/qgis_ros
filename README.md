@@ -1,40 +1,34 @@
 # QGIS-ROS
-
 A QGIS plugin for interacting with data from ROS topics and bags.
 
 The ROSCon 2018 Presentation on QGIS-ROS can be found here: https://vimeo.com/293539252
 
 ## Requirements
-
 - Ubuntu >= 16.04
 - Python 3.5
 - QGIS >= 3.1
 - ROS 1
 
-QGIS can be installed from: https://qgis.org/en/site/forusers/download.html You need to add a PPA if using Ubuntu 16.04.
+QGIS can be installed from [the QGIS download page.][1] You need to add a PPA if using Ubuntu 16.04.
 
-## Installation
-QGIS ROS is a valid Catkin package. Download and build:
-
+## Installation (source)
 ```bash
 cd ~/my_ros_ws/src/
 git clone git@github.com:locusrobotics/qgis_ros.git
-git clone git@github.com/:learpathrobotics/wireless.git  # Temporary
-git clone git@github.com:locusrobotics/json_transport.git  # Temporary
+git clone git@github.com/clearpathrobotics/wireless.git
+git clone git@github.com:locusrobotics/json_transport.git
 catkin build
 
 cd ~/my_ros_ws/src/qgis_ros
-pip3.5 install -r requirements.txt  # Temporary
+pip3 install msgpack  # json_transport dependency that doesn't install for Python 3.
 ```
 
-Note that the temporary dependencies will be addressed by https://github.com/locusrobotics/qgis_ros/issues/9
-
-## Use
-
-Simple:
+## Usage (source)
 ```bash
 rosrun qgis_ros start_qgis_ros
 ```
+
+Once QGIS is loaded, navigate to Plugins -> Installed -> and enable QGIS_ROS with the checkbox. You only need to do this once.
 
 With custom ROS Message Translators:
 ```bash
@@ -42,9 +36,20 @@ export QGIS_ROS_EXTRA_TRANSLATORS='custompythonmodule.translators'
 rosrun qgis_ros start_qgis_ros
 ```
 
-QGIS ROS is a fully qualified QGIS plugin but is not yet uploaded to the Plugin Registry. Therefore, activating the plugin is done by setting `QGIS_PLUGINPATH` to where this plugin is found, and then runing `qgis`.  Optionally, you can launch it in a terminal where the `ROS_MASTER_URI` is set to your desired ROS Master. Otherwise only bagfile access is available.
+## Usage (docker)
+It can often be very tricky to comfortably resolve all dependencies in your workspace because of the combination of ROS1, Python3, GDAL 2, and QGIS.
 
-The plugin *should* be available and loaded by default, but you may have to open the Plugin Manager from within QGIS and enable it once.
+It uses a lazy/reckless way to expose X server to the container. For alternatives, check out the [ROS Docker GUI Tutorial][2].
+
+```
+cd ~/my_catkin_ws/src/qgis_ros/docker
+docker-compose build
+xhost +local:root
+docker-compose up
+xhost -local:root # Remember to remove X server permissions after!
+```
+
+To use extra translators, you'll need to mount a volume with them and/or extend the image.
 
 ## ROS Message Translators
 QGIS is able to read and write data from hundreds of formats and sources by translating these formats into a common in-memory format. In order to represent ROS messages in this format, we target common interchange formats (GeoJSON and GeoTIFF) to make it easy to extend. If you want to make use of a custom ROS message type, all you have to do is:
@@ -64,13 +69,15 @@ Only topics that have ROS Message Translators will appear. Not every message has
 
 
 ## Contributions
-
 Contributions are appreciated. Please open a pull request.
 
 Developers will notice that `camelCase` is being used in Python. This may seem unusual, but PyQT and QGIS both use `camelCase`.So we follow that standard in accordance with PEP8.
 
 ## Contact
-
 Queries that don't fit well as GitHub issues can be directed to Andrew Blakey at ablakey@locusrobotics.com
 
 Being a robogeographer is a lonely life. If there are any others out there, don't hesitate to say hi!
+
+
+[1]: https://qgis.org/en/site/forusers/download.html
+[2]: http://wiki.ros.org/docker/Tutorials/GUI
