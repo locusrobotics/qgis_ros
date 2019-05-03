@@ -1,5 +1,7 @@
-import os
 import importlib
+import os
+
+from qgis.core import QgsMessageLog
 
 from .translators import builtinTranslators
 
@@ -33,12 +35,21 @@ class TranslatorRegistry(object):
         # Register extra translators found in QGIS_ROS_EXTRA_TRANSLATORS.
         translatorPaths = os.environ.get('QGIS_ROS_EXTRA_TRANSLATORS', '').split(',')
         for p in translatorPaths:
-            m = importlib.import_module(p)
+            # Skip empty strings.
+            if p == '':
+                continue
+
+            try:
+                m = importlib.import_module(p)
+            except ModuleNotFoundError:
+                QgsMessageLog.logMessage('Could not find QGIS_ROS_EXTRA_TRANSLATORS module: {}. Skipping.'.format(p))
+                continue
+
             try:
                 translators = getattr(m, 'translators')
             except AttributeError:
-                # Couldn't find any translators from a listed entry.
-                # TODO: log this.
+                QgsMessageLog.logMessage(
+                    'Could not find translator for QGIS_ROS_EXTRA_TRANSLATORS module: {}. Skipping.'.format(p))
                 continue
 
             # Register found translators.
