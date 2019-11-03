@@ -1,7 +1,7 @@
 # QGIS-ROS
 A QGIS plugin for interacting with data from ROS topics and bags.
 
-The ROSCon 2018 Presentation on QGIS-ROS can be found here: https://vimeo.com/293539252
+The ROSCon 2018 Presentation on QGIS-ROS can be found here: https://vimeo.com/293539252. The presentation PDF can be found here: https://roscon.ros.org/2018/presentations/ROSCon2018_UnleashingGISToolbox.pdf
 
 ## Requirements
 - Ubuntu >= 16.04
