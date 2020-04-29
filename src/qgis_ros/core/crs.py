@@ -12,5 +12,10 @@ PROJ4_SIMPLE = '+proj=tmerc \
                 +units=m \
                 +no_defs'
 
+PROJ4_WGS84 = '+proj=longlat +datum=WGS84 +no_defs'
 
 simpleCrs = QgsCoordinateReferenceSystem('PROJ4:' + PROJ4_SIMPLE)
+wgs84Crs = QgsCoordinateReferenceSystem('PROJ4:' + PROJ4_WGS84)
+
+proj4CrsDict = {'simple': PROJ4_SIMPLE, 'wgs84': PROJ4_WGS84}
+crsDict = {'simple': simpleCrs, 'wgs84': wgs84Crs}

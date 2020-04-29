@@ -23,7 +23,7 @@ from qgis.core import (
 
 from PyQt5.QtCore import pyqtSignal
 
-from .crs import simpleCrs
+from .crs import crsDict
 from .translator_registry import TranslatorRegistry
 from .helpers import featuresToQgs, parseUrlArgs
 
@@ -88,6 +88,7 @@ class ROSVectorProvider(QgsVectorDataProvider):
         self.keepOlderMessages = args.get('keepOlderMessages', False)
         self._handledMessageCount = 0
         self.sampleInterval = int(args.get('sampleInterval', 1))
+        self.crsName = args.get('crsName')
 
         if args.get('index'):
             self.createSpatialIndex()
@@ -262,7 +263,7 @@ class ROSVectorProvider(QgsVectorDataProvider):
         return True
 
     def crs(self):
-        return simpleCrs
+        return crsDict[self.crsName]
 
 
 class ROSVectorFeatureIterator(QgsAbstractFeatureIterator):
