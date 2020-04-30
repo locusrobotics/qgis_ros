@@ -1,6 +1,6 @@
 from qgis.core import QgsVectorLayer, QgsRasterLayer, QgsWkbTypes
 import rospy
-from ..crs import PROJ4_SIMPLE
+from ..crs import proj4CrsDict
 from ..helpers import featuresToQgs
 
 
@@ -15,6 +15,7 @@ class Translator(object):
     GeomTypes = QgsWkbTypes
     messageType = None
     geomType = GeomTypes.Unknown
+    crsName = 'simple'
 
 
 class RasterTranslatorMixin(object):
@@ -55,7 +56,7 @@ class VectorTranslatorMixin(object):
         if rosMessages:
             # Features were passed in, so it's a static data layer.
             geomType = QgsWkbTypes.displayString(cls.geomType)  # Get string version of geomtype enum.
-            uri = '{}?crs=PROJ4:{}'.format(geomType, PROJ4_SIMPLE)
+            uri = '{}?crs=PROJ4:{}'.format(geomType, proj4CrsDict[cls.crsName])
             layer = QgsVectorLayer(uri, topicName, 'memory')
 
             # Convert from ROS messages to GeoJSON Features to QgsFeatures.
@@ -77,12 +78,13 @@ class VectorTranslatorMixin(object):
             return layer
         else:
             # No features, it must be a ROS topic to get data from.
-            uri = '{}?type={}&index=no&subscribe={}&keepOlderMessages={}&sampleInterval={}'.format(
+            uri = '{}?type={}&index=no&subscribe={}&keepOlderMessages={}&sampleInterval={}&crsName={}'.format(
                 topicName,
                 cls.messageType._type,
                 subscribe,
                 keepOlderMessages,
-                sampleInterval
+                sampleInterval,
+                cls.crsName,
             )
             layer = QgsVectorLayer(uri, topicName, 'rosvectorprovider')
 
