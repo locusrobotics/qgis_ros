@@ -15,6 +15,7 @@ include_directories(
 install(
   PROGRAMS
     scripts/start_qgis_ros
+    scripts/navsatfix
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

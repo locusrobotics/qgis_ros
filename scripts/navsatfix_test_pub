@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""
+An example publisher of basic NavSatFix data, mostly for testing.
+"""
+from random import random
+
+import rospy
+from sensor_msgs.msg import NavSatFix
+
+
+def navsatfix_test_pub():
+    pub = rospy.Publisher("navsat", NavSatFix, queue_size=1)
+    rospy.init_node("navsatfix_test_pub")
+
+    rate = rospy.Rate(1)
+
+    longitude = 0
+
+    while not rospy.is_shutdown():
+        pub.publish(latitude=0, longitude=longitude)
+        longitude += random()
+        rate.sleep()
+
+
+if __name__ == "__main__":
+    try:
+        navsatfix_test_pub()
+    except rospy.ROSInterruptException:
+        pass
