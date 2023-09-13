@@ -15,7 +15,7 @@ QGIS can be installed from [the QGIS download page.][1] You need to add a PPA if
 ```bash
 cd ~/my_ros_ws/src/
 git clone git@github.com:locusrobotics/qgis_ros.git
-git clone git@github.com/clearpathrobotics/wireless.git
+git clone git@github.com:clearpathrobotics/wireless.git
 git clone git@github.com:locusrobotics/json_transport.git
 catkin build
 
